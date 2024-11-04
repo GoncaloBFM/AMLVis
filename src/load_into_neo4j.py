@@ -14,7 +14,6 @@ COLS = ['timestamp', 'originBank', 'originAccount', 'targetBank', 'targetAccount
         'currencyReceived', 'amountPaid', 'currencyPaid', 'transactionType', 'isMl']
 
 def main():
-    fake = Faker()
     transactions = pandas.read_csv(DEFAULT_DATASET_PATH, names=COLS, skiprows=1)
     transactions = transactions[transactions['originAccount'] != transactions['targetAccount']]
     transactions = transactions[transactions['transactionType'] != 'Reinvestment']
@@ -27,8 +26,6 @@ def main():
     accounts = pandas.DataFrame({'id:ID': account_ids})
     accounts[':LABEL'] = 'account'
     accounts['type'] = 'account'
-    accounts['bank'] = [fake.bank() for _ in accounts],
-    accounts['iban'] = [fake.iban() for _ in accounts],
     account_ids_map = {old_account_id: new_account_id for old_account_id, new_account_id in zip(old_account_ids, account_ids)}
 
     print('Accounts finished')
@@ -49,7 +46,8 @@ def main():
 
     print('Transactions finished')
 
-    person_ids = random.sample(list(map(lambda x: f'p{x}', list(range(len(account_ids))))), int(len(account_ids) * .3))
+    person_ids = random.sample(list(map(lambda x: f'p{x}', list(range(len(account_ids))))), int(len(account_ids) * .9))
+    fake = Faker()
     persons = pandas.DataFrame({
         'id:ID': person_ids,
         'name': [fake.name() for _ in person_ids],
@@ -62,36 +60,13 @@ def main():
 
     print('Persons finished')
 
-    company_ids = random.sample(list(map(lambda x: f'e{x}', list(range(len(account_ids))))), int(len(account_ids) * .3))
-    companies = pandas.DataFrame({
-        'id:ID': company_ids,
-        'name': [fake.company() for _ in person_ids],
-        'country': [fake.country() for _ in person_ids],
-        'address': [fake.street_address() for _ in person_ids],
-    })
-    companies[':LABEL'] = 'company'
-    companies['type'] = 'company'
-
-    print('Companies finished')
-
-    accounts_for_companies = account_ids[:len(company_ids)]
-    accounts_companies_relation = pandas.DataFrame({
-        'source:START_ID': accounts_for_companies,
-        'target:END_ID': company_ids,
-        'id': [f'ce{edge_number}' for edge_number in range(len(account_ids))],
-    })
-    accounts_companies_relation['name'] = 'employee'
-    accounts_companies_relation['directed'] = True
-
-    accounts_for_persons = account_ids[:len(company_ids)]
-    persons_accounts_relation = itertools.cycle(accounts_for_persons)
+    persons_with_accounts = itertools.cycle(person_ids)
     relations = pandas.DataFrame({
-        'source:START_ID': [next(persons_accounts_relation) for _ in account_ids],
+        'source:START_ID': [next(persons_with_accounts) for _ in range(len(account_ids))],
         'target:END_ID': account_ids,
-        'id': [f'cc{edge_number}' for edge_number in range(len(account_ids))],
+        'id': [f'c{edge_number}' for edge_number in range(len(account_ids))],
     })
     relations['type:TYPE'] = 'connection'
-    persons_accounts_relation['name'] = 'person'
 
     print('Relations finished')
 
