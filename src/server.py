@@ -6,6 +6,7 @@ from flask_cors import CORS
 from Neo4JConnector import Neo4JConnector
 
 app = Flask(__name__)
+CORS(app, origins='http://localhost:3000')
 connector = Neo4JConnector()
 
 @app.route('/person/<name>', methods=['GET', 'OPTIONS'])
