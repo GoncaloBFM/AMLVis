@@ -9,6 +9,8 @@ from Neo4JConnector import Neo4JConnector
 app = Flask(__name__)
 if len(sys.argv) == 2 and sys.argv[1] == 'dev':
     CORS(app, origins='http://localhost:3000')
+else:
+    CORS(app)
 
 connector = Neo4JConnector()
 
