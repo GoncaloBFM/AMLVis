@@ -1,4 +1,5 @@
 import json
+import sys
 
 from flask import Flask
 from flask_cors import CORS
@@ -6,7 +7,9 @@ from flask_cors import CORS
 from Neo4JConnector import Neo4JConnector
 
 app = Flask(__name__)
-CORS(app, origins='http://localhost:3000')
+if len(sys.argv) == 1 and sys.argv[1] == 'dev':
+    CORS(app, origins='http://localhost:3000')
+
 connector = Neo4JConnector()
 
 @app.route('/person/<name>', methods=['GET', 'OPTIONS'])
