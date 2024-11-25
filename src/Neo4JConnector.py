@@ -54,9 +54,25 @@ class Neo4JConnector:
         return nodes, edges
 
 
+    def get_path_data_by_node_ids(self, node_id1, node_id2, n_nodes_in_path):
+
+        records, _, _ = self.driver.execute_query(
+            f"MATCH p=((node1)-[*1..{int(n_nodes_in_path) + 1}]-(node2)) WHERE node1.id='{node_id1}' AND node2.id='{node_id2}' RETURN p",
+            database_=DATABASE, routing_=RoutingControl.READ,
+        )
+        nodes = dict()
+        edges = dict()
+        for record in records:
+            for node in record[0].nodes:
+                nodes[node['id']] = dict(node)
+            for edge in record[0].relationships:
+                edges[edge['id']] = {**dict(edge), **{'type': edge.type, 'source': edge.start_node['id'], 'target': edge.end_node['id']}}
+        return list(nodes.values()), list(edges.values())
+
 if __name__ == "__main__":
     connector = Neo4JConnector()
     #print(connector.get_graph_data_by_node_ids(["a198920", "a117421", "p93740"]))
     #print(connector.search_person_by_name('John'))
-    print(connector.get_neighbors_data_by_node_ids(['a1', 'a2']))
+    #print(connector.get_neighbors_data_by_node_ids(['a1', 'a2']))
+    print(connector.get_path_data_by_node_ids('a206691', 'a18', 2))
     connector.close()
