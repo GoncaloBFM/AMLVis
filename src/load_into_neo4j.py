@@ -11,6 +11,8 @@ DATABASE_NAME = ''
 COLS = ['timestamp', 'originBank', 'originAccount', 'targetBank', 'targetAccount', 'amountReceived',
         'currencyReceived', 'amountPaid', 'currencyPaid', 'transactionType', 'isMl']
 
+NATIONALITIES = ['Spain', 'Canada', 'Australia']
+
 TRANSACTIONS_PREFIX = 't'
 ACCOUNT_PREFIX = 'a'
 PERSON_PREFIX = 'p'
@@ -34,7 +36,7 @@ def main():
     accounts[':LABEL'] = 'account'
     accounts['type'] = 'account'
     accounts['iban'] = [fake.iban() for _ in account_ids]
-    accounts['country'] = [fake.country() for _ in account_ids]
+    accounts['nationality'] = [random.choice(NATIONALITIES) for _ in account_ids]
     account_ids_map = {old_account_id: new_account_id for old_account_id, new_account_id in zip(old_account_ids, account_ids)}
 
     print('Accounts finished')
@@ -59,7 +61,7 @@ def main():
     persons = pandas.DataFrame({
         'id:ID': person_ids,
         'name': [fake.name() for _ in person_ids],
-        'nationality': [fake.country() for _ in person_ids],
+        'nationality': [random.choice(NATIONALITIES) for _ in person_ids],
         'address': [fake.street_address() for _ in person_ids],
     })
     persons[':LABEL'] = 'person'
@@ -71,7 +73,7 @@ def main():
     companies = pandas.DataFrame({
         'id:ID': company_ids,
         'name': [fake.company() for _ in company_ids],
-        'nationality': [fake.country() for _ in company_ids],
+        'nationality': [random.choice(NATIONALITIES) for _ in company_ids],
         'address': [fake.street_address() for _ in company_ids],
     })
 
