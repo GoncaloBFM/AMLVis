@@ -1,7 +1,7 @@
 import json
 import sys
 
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS
 
 from Neo4JConnector import Neo4JConnector
@@ -17,6 +17,16 @@ connector = Neo4JConnector()
 @app.route('/person/<name>', methods=['GET', 'OPTIONS'])
 def search_person_by_name(name):
     return json.dumps(connector.search_person_by_name(name)), 200
+
+@app.route('/nodes', methods=['GET', 'OPTIONS'])
+def search_nodes():
+    start = request.args.get('start')
+    size = request.args.get('size')
+    filters = json.loads(request.args.get('filters'))
+    sorting = json.loads(request.args.get('sorting'))
+
+    return json.dumps(connector.get_nodes(start, size, filters, sorting)), 200
+
 
 @app.route('/graph/<node_ids>', methods=['GET', 'OPTIONS'])
 def get_graph_data_by_node_ids(node_ids):

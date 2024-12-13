@@ -38,7 +38,6 @@ class Neo4JConnector:
 
         nodes = [dict(record['node']) for record in node_records]
         edges = [dict(record['edge']) for record in edges_records]
-        print(edges)
         return nodes, edges
 
     def get_neighbors_data_by_node_ids(self, node_ids):
@@ -53,9 +52,22 @@ class Neo4JConnector:
         edges = list({record['edge']['id']: {**dict(record['edge']), **{'type': record['edge'].type, 'source': record['edge'].start_node['id'], 'target': record['edge'].end_node['id']}} for record in records}.values())
         return nodes, edges
 
+    def get_nodes(self, start, size, filters, sorting):
+        descend_by = '' if not sorting else (f"ORDER BY n.{sorting[0]['id']}" + (' DESC' if sorting[0]['desc'] else ''))
+        pagination = f'SKIP {start} LIMIT {size}'
+        where = '' if not filters else 'WHERE ' + ' and '.join(map(lambda e: f'n.{e["id"]}="{e["value"]}"', filters))
+        records, _, _ = self.driver.execute_query(
+            "call() { MATCH (n) " + where + " with COLLECT(DISTINCT n) as ns RETURN ns} call (ns) { return size(ns) as totalCount} call (ns) {UNWIND ns as n " + descend_by + " RETURN n " + pagination + "} return totalCount, n",
+            database_=DATABASE, routing_=RoutingControl.READ,
+        )
+
+        data = [dict(record['n']) for record in records]
+        count = 0 if not records else records[0]['totalCount']
+
+        return {'data':data, 'count':count}, 200
+
 
     def get_path_data_by_node_ids(self, node_id1, node_id2, n_nodes_in_path):
-
         records, _, _ = self.driver.execute_query(
             f"MATCH p=((node1)-[*1..{int(n_nodes_in_path) + 1}]-(node2)) WHERE node1.id='{node_id1}' AND node2.id='{node_id2}' RETURN p",
             database_=DATABASE, routing_=RoutingControl.READ,
@@ -74,5 +86,6 @@ if __name__ == "__main__":
     #print(connector.get_graph_data_by_node_ids(["a198920", "a117421", "p93740"]))
     #print(connector.search_person_by_name('John'))
     #print(connector.get_neighbors_data_by_node_ids(['a1', 'a2']))
-    print(connector.get_path_data_by_node_ids('a206691', 'a18', 2))
+    #print(connector.get_path_data_by_node_ids('a206691', 'a18', 2))
+    print(connector.get_nodes(0, 10, [], []))
     connector.close()
