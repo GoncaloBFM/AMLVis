@@ -20,13 +20,19 @@ def search_person_by_name(name):
 
 @app.route('/nodes', methods=['GET', 'OPTIONS'])
 def search_nodes():
-    start = request.args.get('start')
-    size = request.args.get('size')
-    filters = json.loads(request.args.get('filters'))
-    sorting = json.loads(request.args.get('sorting'))
+    return search_data(True, request.args)
 
-    return json.dumps(connector.get_nodes(start, size, filters, sorting)), 200
+@app.route('/edges', methods=['GET', 'OPTIONS'])
+def search_edges():
+    return search_data(False, request.args)
 
+def search_data(is_node_search, args):
+    nodes_to_filter_by = args.get('node_ids')
+    start = args.get('start')
+    size = args.get('size')
+    filters = json.loads(args.get('filters'))
+    sorting = json.loads(args.get('sorting'))
+    return json.dumps(connector.get_data(is_node_search, nodes_to_filter_by, start, size, filters, sorting)), 200
 
 @app.route('/graph/<node_ids>', methods=['GET', 'OPTIONS'])
 def get_graph_data_by_node_ids(node_ids):

@@ -52,7 +52,7 @@ def main():
         'isMl': 'isMl:boolean',
         'timestamp': 'timestamp:float',
     })
-    transactions['type:TYPE'] = 'transaction'
+    transactions['type'] = 'transaction'
     transactions['currency'] = 'USD'
     transactions['id'] = [f'{TRANSACTIONS_PREFIX}{edge_number}' for edge_number in range(len(transactions))]
 
@@ -91,7 +91,7 @@ def main():
         'target:END_ID': persons_accounts,
         'id': [f'{PERSON_ACCOUNT_OWNERSHIP_PREFIX}{edge_number}' for edge_number in range(len(persons_accounts))],
     })
-    persons_accounts_relations['type:TYPE'] = 'connection'
+    persons_accounts_relations['type'] = 'connection'
     persons_accounts_relations['name'] = 'has'
     persons_accounts_relations['directed'] = True
 
@@ -103,7 +103,7 @@ def main():
         'target:END_ID': companies_accounts,
         'id': [f'{COMPANY_ACCOUNT_OWNERSHIP_PREFIX}{edge_number}' for edge_number in range(len(companies_accounts))],
     })
-    companies_accounts_relations['type:TYPE'] = 'connection'
+    companies_accounts_relations['type'] = 'connection'
     companies_accounts_relations['name'] = 'has'
     companies_accounts_relations['directed'] = True
 
@@ -114,7 +114,7 @@ def main():
         'target:END_ID': company_ids,
         'id': [f'{PERSON_COMPANY_OWNERSHIP_PREFIX}{edge_number}' for edge_number in range(len(company_ids))],
     })
-    persons_companies_relations['type:TYPE'] = 'connection'
+    persons_companies_relations['type'] = 'connection'
     persons_companies_relations['name'] = 'owns'
     persons_companies_relations['directed'] = True
 
