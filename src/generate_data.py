@@ -32,8 +32,6 @@ def main():
     transactions = transactions[transactions['transactionType'] != 'Reinvestment']
     transactions = transactions.drop(columns=['amountReceived', 'currencyReceived', 'originBank', 'targetBank'])
 
-    print(min(transactions['timestamp']))
-    exit()
     transactions['timestamp'] = transactions['timestamp'].apply(lambda x: datetime.strptime(x, '%Y/%m/%d %H:%M').timestamp())
 
     old_account_ids = list(set(transactions['originAccount']) | set(transactions['targetAccount']))
