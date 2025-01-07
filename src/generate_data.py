@@ -32,6 +32,8 @@ def main():
     transactions = transactions[transactions['transactionType'] != 'Reinvestment']
     transactions = transactions.drop(columns=['amountReceived', 'currencyReceived', 'originBank', 'targetBank'])
 
+    print(min(transactions['timestamp']))
+    exit()
     transactions['timestamp'] = transactions['timestamp'].apply(lambda x: datetime.strptime(x, '%Y/%m/%d %H:%M').timestamp())
 
     old_account_ids = list(set(transactions['originAccount']) | set(transactions['targetAccount']))
@@ -57,10 +59,10 @@ def main():
         'timestamp': 'timestamp:float',
     })
 
-    ml1_timestamp_start = transactions.loc[len(transactions)]['timestamp:float']
-    ml1_timestamp_end = ml1_timestamp_start + 86_400_000
-    ml2_timestamp_start = ml1_timestamp_end + 86_400_000
-    ml2_timestamp_end = ml2_timestamp_start + 86_400_000
+    ml1_timestamp_start = datetime.strptime('2022/09/01 00:00', '%Y/%m/%d %H:%M').timestamp()
+    ml1_timestamp_end = datetime.strptime('2022/09/02 00:00', '%Y/%m/%d %H:%M').timestamp()
+    ml2_timestamp_start = datetime.strptime('2022/09/03 00:00', '%Y/%m/%d %H:%M').timestamp()
+    ml2_timestamp_end = datetime.strptime('2022/09/04 00:00', '%Y/%m/%d %H:%M').timestamp()
 
     ml_data = \
     [[ml1_timestamp_start, 'a0', 'a1', 2000, 'USD', 'Credit Card',True],
