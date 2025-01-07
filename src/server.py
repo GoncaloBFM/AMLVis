@@ -27,12 +27,13 @@ def search_edges():
     return search_data(False, request.args)
 
 def search_data(is_node_search, args):
-    nodes_to_filter_by = args.get('node_ids')
+    origin_nodes =  json.loads(args.get('origin-nodes'))
+    nodes_to_filter_by = json.loads(args.get('filter-by-nodes'))
     start = args.get('start')
     size = args.get('size')
     filters = json.loads(args.get('filters'))
     sorting = json.loads(args.get('sorting'))
-    return json.dumps(connector.get_data(is_node_search, nodes_to_filter_by, start, size, filters, sorting)), 200
+    return json.dumps(connector.get_data(is_node_search, origin_nodes, nodes_to_filter_by, start, size, filters, sorting)), 200
 
 @app.route('/graph/<node_ids>', methods=['GET', 'OPTIONS'])
 def get_graph_data_by_node_ids(node_ids):

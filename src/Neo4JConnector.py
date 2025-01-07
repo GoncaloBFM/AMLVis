@@ -61,18 +61,28 @@ class Neo4JConnector:
             elif type(f['value']) is list and len(f['value']) > 0:
                 conditions.append('(' + ' OR '.join(map(lambda v: f'n.{f["id"]}="{v}"', f["value"])) + ')')
         if conditions:
-            return 'WHERE ' + ' AND '.join(conditions)
+            return ' AND '.join(conditions)
         return ''
 
-    def get_data(self, is_node_search, nodes_to_filter_by, start, size, filters, sorting):
+    def get_data(self, is_node_search, origin_nodes, nodes_to_filter_by, start, size, filters, sorting):
         descend_by = '' if not sorting else (f"ORDER BY n.{sorting[0]['id']}" + (' DESC' if sorting[0]['desc'] else ''))
         skip = '' if start is None else f'SKIP {start}'
         limit = '' if size is None else f'LIMIT {size}'
         where = self.filters_to_query(filters)
-        match = '(n)' if is_node_search else '(a)-[n]-(b)'
-        where +=  '' if  is_node_search or not nodes_to_filter_by else ((' AND ' if where else '' ) + f'a.id IN {str(nodes_to_filter_by)} and b.id IN {str(nodes_to_filter_by)}')
+        if not origin_nodes:
+            match = '(n)' if is_node_search else '(a)-[n]-(b)'
+            where +=  '' if  is_node_search or not nodes_to_filter_by else ((' AND ' if where else '' ) + f'a.id IN {str(nodes_to_filter_by)} and b.id IN {str(nodes_to_filter_by)}')
+        else:
+            match = '(a)-[r]-(n)' if is_node_search else '(a)-[n]-(b)'
+            where += (' AND ' if where else '' ) + f'a.id IN {origin_nodes}'
+            where +=  '' if  is_node_search or not nodes_to_filter_by else f' AND b.id IN {str(nodes_to_filter_by)}'
+
+        if where:
+            where = 'WHERE ' + where
+
         return_clause = 'totalCount, n' if is_node_search else 'totalCount, startNode(n) as start_node, n, endNode(n) as end_node'
         query = "call() { MATCH " + match + " " + where + " with COLLECT(DISTINCT n) as ns RETURN ns} call (ns) { return size(ns) as totalCount} call (ns) {UNWIND ns as n " + descend_by + " RETURN n " + skip + " " + limit + "} return " + return_clause
+        print(query)
         records, _, _ = self.driver.execute_query(query, database_=DATABASE, routing_=RoutingControl.READ,)
         if is_node_search:
             data = [dict(record['n']) for record in records]

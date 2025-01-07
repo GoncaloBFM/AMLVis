@@ -23,7 +23,11 @@ PERSON_COMPANY_OWNERSHIP_PREFIX = 'pe'
 
 def main():
     fake = Faker()
+    Faker.seed(0)
+    random.seed(0)
+
     transactions = pandas.read_csv(DEFAULT_DATASET_PATH, names=COLS, skiprows=1)
+
     transactions = transactions[transactions['originAccount'] != transactions['targetAccount']]
     transactions = transactions[transactions['transactionType'] != 'Reinvestment']
     transactions = transactions.drop(columns=['amountReceived', 'currencyReceived', 'originBank', 'targetBank'])
@@ -52,9 +56,35 @@ def main():
         'isMl': 'isMl:boolean',
         'timestamp': 'timestamp:float',
     })
+
+    ml1_timestamp_start = transactions.loc[len(transactions)]['timestamp:float']
+    ml1_timestamp_end = ml1_timestamp_start + 86_400_000
+    ml2_timestamp_start = ml1_timestamp_end + 86_400_000
+    ml2_timestamp_end = ml2_timestamp_start + 86_400_000
+
+    ml_data = \
+    [[ml1_timestamp_start, 'a0', 'a1', 2000, 'USD', 'Credit Card',True],
+    [ml1_timestamp_start, 'a0', 'a2', 2000, 'USD', 'Credit Card',True],
+    [ml1_timestamp_start, 'a0', 'a3', 2000, 'USD', 'Credit Card',True],
+    [ml1_timestamp_start, 'a0', 'a4', 2000, 'USD', 'Credit Card',True],
+
+    [ml1_timestamp_end, 'a1', 'a5', 2000, 'USD', 'Credit Card',True],
+    [ml1_timestamp_end, 'a2', 'a5', 2000, 'USD', 'Credit Card',True],
+    [ml1_timestamp_end, 'a3', 'a5', 2000, 'USD', 'Credit Card',True],
+    [ml1_timestamp_end, 'a4', 'a5', 2000, 'USD', 'Credit Card',True],
+
+    [ml2_timestamp_start, 'a5', 'a7', 4000, 'USD', 'Credit Card', True],
+    [ml2_timestamp_start, 'a5', 'a8', 4000, 'USD', 'Credit Card', True],
+
+    [ml2_timestamp_end, 'a7', 'a9', 4000, 'USD', 'Credit Card', True],
+    [ml2_timestamp_end, 'a8', 'a9', 4000, 'USD', 'Credit Card', True]]
+
+    transactions = pandas.concat([pandas.DataFrame(columns=transactions.columns, data=ml_data), transactions])
+
     transactions['type'] = 'transaction'
     transactions['currency'] = 'USD'
     transactions['id'] = [f'{TRANSACTIONS_PREFIX}{edge_number}' for edge_number in range(len(transactions))]
+
 
     print('Transactions finished')
     person_ids = random.sample(list(map(lambda x: f'{PERSON_PREFIX}{x}', list(range(len(account_ids))))), int(len(account_ids) * .6))
